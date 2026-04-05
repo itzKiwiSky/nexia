@@ -1,0 +1,14 @@
+[package]
+name = "CerebrusEngine"
+display_name = "Cerebrus"
+description = ""
+author = ""
+version = "0.0.1"
+icon = "game/icon.png"
+
+[build]
+default = ["win64", "linux"]
+
+[directories]
+source = "game"
+build = "build"
