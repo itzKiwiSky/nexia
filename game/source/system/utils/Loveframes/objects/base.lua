@@ -17,6 +17,7 @@ return function(loveframes)
         self.type = "base"
         self.width, self.height = love.graphics.getDimensions()
         self.internal = true
+        self.canHover = true
         self.children = {}
         self.internals = {}
     end
@@ -738,7 +739,7 @@ return function(loveframes)
         local hoverobject = loveframes.hoverobject
 
         -- check if the mouse is colliding with the object
-        if state == curstate and visible then
+        if state == curstate and visible and self.canHover then
             local collide = self.collide
             if selfcol and collide then
                 loveframes.collisioncount = collisioncount + 1
@@ -759,7 +760,7 @@ return function(loveframes)
         end
 
         -- check if the object is being hovered
-        if selfcol and hoverobject == self and type ~= "base" then
+        if selfcol and hoverobject == self and type ~= "base" and self.canHover then
             self.hover = true
         else
             self.hover = false
@@ -799,6 +800,10 @@ return function(loveframes)
 --]] ---------------------------------------------------------
     function newobject:GetHover()
         return self.hover
+    end
+
+    function newobject:SetHover(hover)
+        self.canHover = hover or true
     end
 
     --[[---------------------------------------------------------

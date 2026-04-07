@@ -1,91 +1,107 @@
----@class LoveView
 local LoveView = {}
 
-LoveView.isEventRegistered = false ---@type boolean
-LoveView.ignoreRegisteredEvents = false ---@type boolean
+LoveView.isEventRegistered = false
+LoveView.stack = {}
 
-LoveView.views = {} ---@type table<LoveView.view>
+local function newViewState(path, modtime)
+    return {
+        path = path,
+        modtime = modtime or 0,
+        view = nil
+    }
+end
 
----@private
-local function reloadView(path)
-    if love.filesystem.isFused() then
+local function processView(view)
+    if not view then return end
+
+    local ok, result = pcall(view)
+    if not ok then
+        print("[ERROR]: " .. tostring(result))
         return
     end
 
-    for _, view in ipairs(LoveView.views) do
+    local new = loveframes.Create
+
+    local ok2, err = pcall(result, new)
+    if not ok2 then
+        print("[ERROR]: " .. tostring(err))
+    end
+end
+
+local function updateView()
+    if love.filesystem.isFused() then return end
+
+    local hasChanges = false
+
+    for _, view in ipairs(LoveView.stack) do
         local fileinfo = love.filesystem.getInfo(view.path)
-        if fileinfo.modtime > view.lastmod then
-            loveframes.RemoveAll()
-            LoveView.views[_].lastmod = fileinfo.modtime
 
-            --local chunk = love.filesystem.load(view.path)
-            local ok, res = pcall(love.filesystem.load, view.path)
-            local chunk = res
-            if not ok or type(res) == "nil" then
-                print("[ERROR] : " .. res)
-                return
-            end
+        if fileinfo and fileinfo.modtime > view.modtime then
+            local ok, loadedChunk = pcall(love.filesystem.load, view.path)
 
-            local sucess, err = pcall(chunk())
-            if err then
-                print(err)
-                return
+            if ok and loadedChunk then
+                view.modtime = fileinfo.modtime
+                view.view = loadedChunk
+                hasChanges = true
+            else
+                print("[VIEW ERROR]: " .. tostring(loadedChunk))
             end
-            print("[VIEW] : Updated view")
         end
+    end
+
+    if hasChanges then
+        loveframes.RemoveAll()
+
+        for _, view in ipairs(LoveView.stack) do
+            processView(view.view)
+        end
+
+        print("[VIEW]: Rebuilt stack")
     end
 end
 
 function LoveView.unloadView()
     loveframes.RemoveAll()
-    table.pop(LoveView.views)
-end
 
-function LoveView.loadView(path)
-    assert(loveframes ~= nil, "[ERROR] : Loveframes not found")
-    assert(type(path) == "string", "[ERROR] : Expected type 'string' for path, got: " .. type(path))
-
-    LoveView.ignoreRegisteredEvents = false
-
-    -- clear old view --
-    loveframes.RemoveAll()
-    local fileinfo = love.filesystem.getInfo(path)
-
-    if fileinfo ~= nil then
-        local viewstruct = {}
-
-        local ok, res, errmsg = pcall(love.filesystem.load, path)
-        if not ok or type(res) == "nil" then
-            print("[ERROR] : Failed to load. " .. res)
-            return
-        end
-
-        local viewfile = res
-
-        viewstruct.path = path
-        viewstruct.lastmod = fileinfo.modtime
-
-        local sucess, err = pcall(viewfile())
-        if not sucess then
-            print(err)
-            return
-        end
-
-        LoveView.views[#LoveView.views + 1] = viewstruct
-    else
-        print("File not found, ignoring it")
+    for i = #LoveView.stack, 1, -1 do
+        table.remove(LoveView.stack, i)
     end
 end
 
+function LoveView.addView(path)
+    local fileinfo = love.filesystem.getInfo(path)
+    if not fileinfo then
+        print("[ERROR]: File not found: " .. path)
+        return
+    end
+
+    local ok, loadedChunk = pcall(love.filesystem.load, path)
+
+    if not ok or not loadedChunk then
+        print("[ERROR]: Failed to load " .. tostring(loadedChunk))
+        return
+    end
+
+    print("[SUCCESS]: Loaded file: " .. path)
+
+    processView(loadedChunk)
+
+    local view = newViewState(path, fileinfo.modtime)
+    view.view = loadedChunk
+
+    table.insert(LoveView.stack, view)
+end
+
 function LoveView.draw()
-    local sucess, err = pcall(loveframes["draw"])
-    if err then print(err) end
+    local ok, err = pcall(loveframes.draw)
+    if not ok then print(err) end
 end
 
 function LoveView.update(elapsed)
-    reloadView()
-    local sucess, err = pcall(loveframes["update"], elapsed)
-    if err then print(err) end
+    updateView()
+
+    local ok, err = pcall(loveframes.update, elapsed)
+    if not ok then print(err) end
 end
 
 function LoveView.registerLoveframesEvents()
@@ -94,20 +110,32 @@ function LoveView.registerLoveframesEvents()
     end
 
     local function blank() end
-    local allowedEvents = { "mousepressed", "mousereleased", "wheelmoved", "textinput", "keypressed", "keyreleased" }
+    local allowedEvents = {
+        "mousepressed",
+        "mousereleased",
+        "wheelmoved",
+        "textinput",
+        "keypressed",
+        "keyreleased"
+    }
+
     local ogFuncs = {}
+
     for _, event in ipairs(allowedEvents) do
         ogFuncs[event] = love[event] or blank
+
         love[event] = function(...)
             ogFuncs[event](...)
-            if loveframes[event] and not LoveView.ignoreRegisteredEvents then
-                local sucess, err = pcall(loveframes[event], ...)
-                if err then
+
+            if loveframes[event] then
+                local ok, err = pcall(loveframes[event], ...)
+                if not ok then
                     print(err)
                 end
             end
         end
     end
+
     LoveView.isEventRegistered = true
 end
 

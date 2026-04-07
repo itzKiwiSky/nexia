@@ -1126,7 +1126,8 @@ return function(loveframes)
                     local maskchar = object:GetMaskChar()
                     str = loveframes.utf8.gsub(str, ".", maskchar)
                 end
-                skin.PrintText(#str > 0 and str or (#lines == 1 and placeholder or ""), textx, texty + theight * i - theight)
+                skin.PrintText(#str > 0 and str or (#lines == 1 and placeholder or ""), textx,
+                    texty + theight * i - theight)
             end
         else
             str = lines[1]
@@ -1707,7 +1708,7 @@ return function(loveframes)
         blue    = color "#6298b3",
         magenta = color "#8a62b3",
         pink    = color "#cc70b5",
-        crimson = color "#4B1020",
+        crimson = color "#4D1B28",
     }
 
     for k, v in pairs(colors) do

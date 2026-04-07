@@ -58,10 +58,6 @@ function love.initialize()
 
     gamestate.registerEvents()
 
-    assetManager.targetState = PlayState
+    assetManager.targetState = EditorState
     assetManager.init(require('load'))
-end
-
-function love.quit()
-    --DitherManager.release()
 end

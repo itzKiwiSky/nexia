@@ -1,0 +1,36 @@
+{
+    "meta": {
+        "artist": "Nimbus",
+        "bpm": 100,
+        "title": "Helloo",
+        "description": "",
+        "laneCount": 2,
+        "tags": [],
+        "flags": {
+            "scriptedEvents": false
+        },
+        "assets": {
+            "scripts": []
+        }
+    },
+    "lanes": [
+        {
+            "control": "control1",
+            "scrollSpeed": 1.5,
+            "notes": []
+        }
+    ],
+    "events": [
+        {
+            "time": 0.5,
+            "event": {
+                "name": "cameraZoom",
+                "args": {
+                    "zoom": 2,
+                    "time": 0.5,
+                    "ease": "backInOut"
+                }
+            }
+        }
+    ]
+}
