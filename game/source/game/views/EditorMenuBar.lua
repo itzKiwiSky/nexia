@@ -1,5 +1,7 @@
 package.loaded["source.game.views.Shared"] = nil
-local shared = require 'source.game.views.Shared'
+local shared = require("source.game.views.Shared")
+
+local font = fontcache.getFont("pixel_font", 18)
 
 local function newTabItem(name, action)
     return {
@@ -15,49 +17,172 @@ local function newTab(name, items)
     }
 end
 
+local function setTabVisible(tab, visible)
+    tab.panel:SetVisible(visible)
+
+    for _, element in ipairs(tab.elements) do
+        element:SetVisible(visible)
+    end
+end
+
+local function createItemList(new, parent, x, items)
+    local panel = new("panel")
+    panel:SetParent(parent)
+    panel:SetX(x)
+    panel:SetY(parent.height)
+
+    local elements = {}
+    local measuredTexts = {}
+
+    local paddingLeft = 8
+    local btnH = 28
+    local maxWidth = 0
+
+    -- PASSO 1: medir maior texto
+    for _, item in ipairs(items) do
+        local text = new("text")
+        text:SetFont(font)
+        text:SetDefaultColor(1, 1, 1, 1)
+        text:SetText(item.name)
+
+        maxWidth = math.max(maxWidth, text.width)
+
+        table.insert(measuredTexts, {
+            item = item,
+            text = text
+        })
+    end
+
+    local finalWidth = maxWidth + paddingLeft * 2
+
+    -- PASSO 2: criar elementos
+    for idx, entry in ipairs(measuredTexts) do
+        local item = entry.item
+        local text = entry.text
+        local y = (idx - 1) * btnH
+
+        local btn = new("button")
+        btn:SetParent(panel)
+        btn:SetX(0)
+        btn:SetY(y)
+        btn:SetSize(finalWidth, btnH)
+        btn:SetHover(true)
+        btn.drawfunc = shared.buttonHitbox
+        btn.OnClick = function()
+            if item.action then
+                item.action()
+            end
+        end
+
+        text:SetParent(panel)
+        text:SetX(paddingLeft)
+        text:SetY(y + (btnH - text.height) / 2)
+
+        table.insert(elements, btn)
+        table.insert(elements, text)
+    end
+
+    panel:SetSize(finalWidth, #items * btnH)
+
+    -- invisível por padrão
+    panel:SetVisible(false)
+    for _, element in ipairs(elements) do
+        element:SetVisible(false)
+    end
+
+    return {
+        panel = panel,
+        elements = elements
+    }
+end
+
 return function(new)
     local tabs = {}
+    local openedTab = nil
+    local topButtons = {}
 
-    local padding = 20
+    local function hideAllTabs()
+        for _, tab in ipairs(tabs) do
+            setTabVisible(tab, false)
+        end
+        openedTab = nil
+    end
+
     local options = {
         newTab("File", {
-            newTabItem("New project", function()
-
+            newTabItem("New Project", function()
+                print("new project")
             end),
+            newTabItem("Open File", function()
+                print("open file")
+            end),
+            newTabItem("Save", function()
+                print("save")
+            end)
         }),
+
         newTab("Edit", {
-        }),
-        newTab("View", {
-
-        }),
+            newTabItem("Undo", function()
+                print("undo")
+            end),
+            newTabItem("Redo", function()
+                print("redo")
+            end)
+        })
     }
-
-    local font = fontcache.getFont("pixel_font", 18)
 
     local panel = new("panel")
     panel:SetSize(shove.getViewportWidth(), 26)
 
-    --local btn = new("button")
+    local paddingX = 20
+    local currentX = 0
 
-    for idx, tab in ipairs(options) do
+    for _, tab in ipairs(options) do
+        -- mede texto primeiro
+        local txt = new("text")
+        txt:SetFont(font)
+        txt:SetDefaultColor(1, 1, 1, 1)
+        txt:SetText(tab.name)
+
+        local btnWidth = txt.width + paddingX
+
+        -- botão/hitbox
         local btn = new("button")
-        btn.drawfunc = shared.buttonHitbox
-        btn.x = (btn.width + padding) * (idx - 1)
-        btn:SetHeight(panel.height)
+        btn:SetParent(panel)
+        btn:SetX(currentX)
+        btn:SetY(0)
+        btn:SetSize(btnWidth, panel.height)
         btn:SetHover(true)
-        btn.OnClick = function(obj)
-            -- make a tab manager later --
+        btn.drawfunc = shared.buttonHitbox
+
+        -- texto separado (posição ABSOLUTA)
+        txt:SetParent(panel)
+        txt:SetX(currentX + (btnWidth - txt.width) / 2)
+        txt:SetY((panel.height - txt.height) / 2)
+
+        local dropdown = createItemList(new, panel, currentX, tab.items)
+
+        table.insert(topButtons, btn)
+        table.insert(topButtons, txt)
+        table.insert(tabs, dropdown)
+
+        btn.OnClick = function()
+            if openedTab == dropdown then
+                hideAllTabs()
+                return
+            end
+
+            hideAllTabs()
+            setTabVisible(dropdown, true)
+            openedTab = dropdown
         end
 
-        local txt = new("text")
-        txt:SetDefaultColor(1, 1, 1, 1)
-        txt:SetFont(font)
-        txt:SetParent(btn)
-        txt:SetText(tab.name)
-        txt:SetX(btn.x)
-
-        txt:CenterWithinArea(btn.x, btn.y, btn.width, btn.height)
+        currentX = currentX + btnWidth
     end
 
-    --btn.drawfunc = shared.blank
+    return {
+        panel = panel,
+        tabs = tabs,
+        hideAllTabs = hideAllTabs
+    }
 end

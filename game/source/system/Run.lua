@@ -10,7 +10,7 @@ love.FEATURE_FLAGS = require 'source.system.FeatureFlags'
 love._FPSCap = 144
 love._unfocusedFPSCap = 60
 local flashOpacity = 0
-love._showFPS = true
+love._showFPS = false
 
 love.window.resolutionModes = {}
 
@@ -121,7 +121,8 @@ function love.run()
     -- Initialize Shöve with fixed game resolution and options
     shove.setResolution(config.viewportWidth, config.viewportHeight, { fitMethod = "aspect", renderMode = "layer" })
     -- Set up a resizable window
-    shove.setWindowMode(config.screenWidth, config.screenHeight, { resizable = config.resizable, vsync = 0, fullscreen = config.fullscreen })
+    shove.setWindowMode(config.screenWidth, config.screenHeight,
+        { resizable = config.resizable, vsync = 0, fullscreen = config.fullscreen })
 
     shove.createLayer("mainView", {
         stencil = true,
@@ -246,7 +247,8 @@ function love.run()
             shove.endDraw()
 
             if love.mouse.isVisible() and love.mouse.getRelativeMode() then
-                love.graphics.draw(cursor, love.mouse.getX() - 4, love.mouse.getY() - 1, 0, 20 / cursor:getWidth(), 20 / cursor:getHeight())
+                love.graphics.draw(cursor, love.mouse.getX() - 4, love.mouse.getY() - 1, 0, 20 / cursor:getWidth(),
+                    20 / cursor:getHeight())
             end
             love.graphics.present()
         end
