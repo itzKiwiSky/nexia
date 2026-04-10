@@ -1,8 +1,8 @@
 [package]
-name = "CerebrusEngine"
-display_name = "Cerebrus"
+name = "Nexia"
+display_name = "Nexia"
 description = ""
-author = ""
+author = "BeatWise"
 version = "0.0.1"
 icon = "game/icon.png"
 
