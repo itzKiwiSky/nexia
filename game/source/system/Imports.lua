@@ -6,7 +6,6 @@ return function()
     Slab = require 'source.system.utils.Slab'
     moonshine = require 'source.system.Moonshine'
     discordrpc = require 'source.system.libraries.discordRPC'
-    --discordsdk = require 'source.system.libraries.discordGameSDK'
     loveframes = require 'source.system.utils.Loveframes'
     lume = require 'source.system.libraries.lume'
 end
