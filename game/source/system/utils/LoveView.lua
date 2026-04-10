@@ -16,7 +16,7 @@ local function processView(view)
 
     local ok, result = pcall(view)
     if not ok then
-        print("[ERROR]: " .. tostring(result))
+        print("[LoveView.Error]: " .. tostring(result))
         return
     end
 
@@ -24,7 +24,7 @@ local function processView(view)
 
     local ok2, err = pcall(result, new)
     if not ok2 then
-        print("[ERROR]: " .. tostring(err))
+        print("[LoveView.Error]: " .. tostring(err))
     end
 end
 
@@ -44,7 +44,7 @@ local function updateView()
                 view.view = loadedChunk
                 hasChanges = true
             else
-                print("[VIEW ERROR]: " .. tostring(loadedChunk))
+                print("[LoveView.Error]: " .. tostring(loadedChunk))
             end
         end
     end
@@ -56,7 +56,7 @@ local function updateView()
             processView(view.view)
         end
 
-        print("[VIEW]: Rebuilt stack")
+        print("[LoveView.Log]: Rebuilt stack")
     end
 end
 
@@ -71,18 +71,20 @@ end
 function LoveView.addView(path)
     local fileinfo = love.filesystem.getInfo(path)
     if not fileinfo then
-        print("[ERROR]: File not found: " .. path)
+        print("[LoveView.Error]: File not found: " .. path)
         return
     end
 
     local ok, loadedChunk = pcall(love.filesystem.load, path)
 
     if not ok or not loadedChunk then
-        print("[ERROR]: Failed to load " .. tostring(loadedChunk))
+        print("[LoveView.Error]: Failed to load " .. tostring(loadedChunk))
         return
     end
 
-    print("[SUCCESS]: Loaded file: " .. path)
+    local strlog = string.format("{bgBrightMagenta}{brightCyan}{bold}[Love.LoveView]{reset}{brightGreen} : Loaded file %s{reset}", path)
+    --print("[LoveView.Sucess]: Loaded file: " .. path)
+    io.printf(strlog)
 
     processView(loadedChunk)
 

@@ -25,7 +25,7 @@ local function setTabVisible(tab, visible)
     end
 end
 
-local function createItemList(new, parent, x, items)
+local function createItemList(new, parent, x, items, hideAllTabs)
     local panel = new("panel")
     panel:SetParent(parent)
     panel:SetX(x)
@@ -71,6 +71,9 @@ local function createItemList(new, parent, x, items)
         btn.OnClick = function()
             if item.action then
                 item.action()
+            end
+            if hideAllTabs then
+                hideAllTabs()
             end
         end
 
@@ -160,7 +163,7 @@ return function(new)
         txt:SetX(currentX + (btnWidth - txt.width) / 2)
         txt:SetY((panel.height - txt.height) / 2)
 
-        local dropdown = createItemList(new, panel, currentX, tab.items)
+        local dropdown = createItemList(new, panel, currentX, tab.items, hideAllTabs)
 
         table.insert(topButtons, btn)
         table.insert(topButtons, txt)

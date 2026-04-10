@@ -51,7 +51,7 @@ function LoadingState:enter()
     end, function(k, h, k)
         if FEATURE_FLAGS.debug then
             io.printf(string.format(
-                "{bgBrightMagenta}{brightCyan}{bold}[LOVE]{reset}{brightWhite} : File loaded with {brightGreen}sucess{reset} | {bold}{underline}{brightYellow}%s{reset}",
+                "{bgBrightMagenta}{brightCyan}{bold}[Love.AssetManager]{reset}{brightWhite} : File loaded with {brightGreen}sucess{reset} | {bold}{underline}{brightYellow}%s{reset}",
                 k))
         end
     end)

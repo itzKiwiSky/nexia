@@ -5,7 +5,7 @@ return function()
     baton = require 'source.system.utils.Baton'
     Slab = require 'source.system.utils.Slab'
     moonshine = require 'source.system.Moonshine'
-    --discordrpc = require 'source.system.libraries.discordRPC'
+    discordrpc = require 'source.system.libraries.discordRPC'
     loveframes = require 'source.system.utils.Loveframes'
     lume = require 'source.system.libraries.lume'
 end

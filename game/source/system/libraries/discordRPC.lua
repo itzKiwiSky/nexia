@@ -1,5 +1,6 @@
 local ffi = require "ffi"
-local discordRPClib = ffi.load("discord-rpc")
+local sourcePath = love.filesystem.getSaveDirectory() .. "/bin"
+local discordRPClib = ffi.load(sourcePath .. "/discord-rpc")
 
 ffi.cdef [[
 typedef struct DiscordRichPresence {

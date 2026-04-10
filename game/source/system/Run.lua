@@ -18,7 +18,6 @@ local modes = love.window.getFullscreenModes()
 
 table.sort(modes, function(a, b) return a.width * a.height > b.width * b.height end) -- Ordena da maior para a menor
 
-
 for i, mode in ipairs(modes) do
     love.window.resolutionModes[i] = {
         width = mode.width, height = mode.height
@@ -78,7 +77,7 @@ local function loadAddons()
     local addons = fsutil.scanFolder("source/system/addons")
     for a = 1, #addons, 1 do
         local ad = addons[a]:gsub(".lua", "")
-        print(string.format("[ENGINE] : Addon '%s' loaded with sucess", ad))
+        print(string.format("[love.addons] : Addon '%s' loaded with sucess", ad))
         require(ad:gsub("/", "%."))
     end
 end
@@ -92,7 +91,7 @@ function love.run()
     copyLib()
 
     local sourcePath = love.filesystem.getSaveDirectory() .. "/bin"
-    print(sourcePath)
+    --print(sourcePath)
 
     local newCPath = string.format(
         "%s/?.dll;%s/?.so;%s/?.dylib;%s",

@@ -6,10 +6,5 @@
     "fullscreen": false,
     "resizable": false,
     "vsync": 0,
-    "borderless": false,
-    "api": {
-        "discord": {
-            "appid": ""
-        }
-    }
+    "borderless": false
 }
