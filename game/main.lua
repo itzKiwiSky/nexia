@@ -2,11 +2,29 @@ require 'source.system.ErrHandler'
 require 'source.system.Run'
 local gitstuff = require 'source.system.GitStuff' -- super important stuff --
 assetManager = require 'source.system.AssetManager'
+require('source.system.Imports')()
 
 updatePresence = require 'source.system.UpdatePresence'
 
 languageService = {}
 languageRaw = {}
+
+function discordrpc.ready(userId, username, discriminator, avatar)
+    local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightWhite}: ready (%s, %s, %s, %s){reset}", userId,
+        username, discriminator, avatar)
+    io.printf(str)
+end
+
+function discordrpc.disconnected(errorCode, message)
+    local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: disconnected (%s, %s){reset}", errorCode,
+        message)
+    io.printf(str)
+end
+
+function discordrpc.errored(errorCode, message)
+    local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: Error (%s, %s){reset}", errorCode, message)
+    io.printf(str)
+end
 
 function love.initialize()
     love.graphics.setDefaultFilter("nearest", "nearest")
@@ -53,27 +71,15 @@ function love.initialize()
             local state = "source.states." .. states[s]:gsub(".lua", "")
             require(state)
             local strName = states[s]:gsub(".lua", "")
-            local str = string.format("{bgBrightMagenta}{brightCyan}{bold}[Love.AssetManager]{reset}{brightWhite} : State {bgYellow}%s{reset}{brightWhite} loaded with {brightGreen}Sucess{reset}", strName)
+            local str = string.format(
+                "{bgBrightMagenta}{brightCyan}{bold}[Love.AssetManager]{reset}{brightWhite} : State {bgYellow}%s{reset}{brightWhite} loaded with {brightGreen}Sucess{reset}",
+                strName)
             io.printf(str)
             table.insert(registers.statesName, strName)
         end
     end
 
     --love.filesystem.createDirectory("mods")
-    function discordrpc.ready(userId, username, discriminator, avatar)
-        local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightWhite}: ready (%s, %s, %s, %s){reset}", userId, username, discriminator, avatar)
-        io.printf(str)
-    end
-
-    function discordrpc.disconnected(errorCode, message)
-        local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: disconnected (%s, %s){reset}", errorCode, message)
-        io.printf(str)
-    end
-
-    function discordrpc.errored(errorCode, message)
-        local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: Error (%s, %s){reset}", errorCode, message)
-        io.printf(str)
-    end
 
     gamestate.registerEvents()
 

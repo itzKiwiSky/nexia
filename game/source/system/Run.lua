@@ -101,15 +101,12 @@ function love.run()
         package.cpath)
     package.cpath = newCPath
 
-    require('source.system.Imports')()
-
     fontcache.init()
     loveView = require 'source.system.utils.LoveView'
 
 
     Controls = baton.new({
         controls = controls,
-        --joystick = love.joystick.getJoysticks()[1]
     })
 
     flux.removeAll()
