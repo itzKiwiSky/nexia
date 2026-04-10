@@ -5,10 +5,5 @@ return function()
 
     io.printf("{brightYellow}[CommitID] : " .. commitID .. "{reset}")
     io.printf("{brightMagenta}[Branch] : " .. branch .. "{reset}")
-    io.printf("{cyan}[Status] : " .. (status == "" and "Everything clear :3" or status) .. "{reset}")
-
-    --local cidfile = nativefs.newFile(love.filesystem.getSource() .. "/.nxid")
-    --cidfile:open("w")
-    --cidfile:write(string.sub(commitID, 1, 8))
-    --cidfile:close()
+    io.printf("{cyan}[Status]\n" .. (status == "" and "Everything clear :3" or status) .. "{reset}")
 end

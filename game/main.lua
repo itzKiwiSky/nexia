@@ -2,29 +2,12 @@ require 'source.system.ErrHandler'
 require 'source.system.Run'
 local gitstuff = require 'source.system.GitStuff' -- super important stuff --
 assetManager = require 'source.system.AssetManager'
-require('source.system.Imports')()
 
-updatePresence = require 'source.system.UpdatePresence'
+presence = require 'source.system.UpdatePresence'
+local presenceUpdateTimer = 0
 
 languageService = {}
 languageRaw = {}
-
-function discordrpc.ready(userId, username, discriminator, avatar)
-    local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightWhite}: ready (%s, %s, %s, %s){reset}", userId,
-        username, discriminator, avatar)
-    io.printf(str)
-end
-
-function discordrpc.disconnected(errorCode, message)
-    local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: disconnected (%s, %s){reset}", errorCode,
-        message)
-    io.printf(str)
-end
-
-function discordrpc.errored(errorCode, message)
-    local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: Error (%s, %s){reset}", errorCode, message)
-    io.printf(str)
-end
 
 function love.initialize()
     love.graphics.setDefaultFilter("nearest", "nearest")
@@ -40,6 +23,10 @@ function love.initialize()
             settings = {},
         },
     }
+
+    local configAPI = json.decode(love.filesystem.read("API.json"))
+    --print(tonumber(configAPI.discord.appid))
+    discordrpc.initialize(configAPI.discord.appid, false)
 
     gameSave:initialize()
     love.keyboard.setTextInput(true)
@@ -81,6 +68,24 @@ function love.initialize()
 
     --love.filesystem.createDirectory("mods")
 
+    function discordrpc.ready(userId, username, discriminator, avatar)
+        local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightWhite}: ready (%s, %s, %s, %s){reset}", userId, username, discriminator, avatar)
+        io.printf(str)
+
+        presence.largeImageKey = "placeholder"
+        presence()
+    end
+
+    function discordrpc.disconnected(errorCode, message)
+        local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: disconnected (%s, %s){reset}", errorCode, message)
+        io.printf(str)
+    end
+
+    function discordrpc.errored(errorCode, message)
+        local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: Error (%s, %s){reset}", errorCode, message)
+        io.printf(str)
+    end
+
     gamestate.registerEvents()
 
     assetManager.targetState = EditorState
@@ -88,6 +93,13 @@ function love.initialize()
 end
 
 function love.update(elapsed)
+    presenceUpdateTimer = presenceUpdateTimer + elapsed
+
+    if presenceUpdateTimer > 2 then
+        --discordrpc.updatePresence()
+        presence()
+        presenceUpdateTimer = 0
+    end
     discordrpc.runCallbacks()
 end
 

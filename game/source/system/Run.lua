@@ -30,7 +30,6 @@ logs = {}
 
 -- copy all the need libraries for game to work --
 local function copyLib()
-    love.filesystem.createDirectory("bin")
     if love.filesystem.getInfo("bin") == nil then return end
 
     if love.system.getOS() == "Windows" then
@@ -53,7 +52,7 @@ local function copyLib()
         end
     end
 
-    print("[ENGINE] : Libraries copied with sucess")
+    io.printf("{bgBrightMagenta}{brightCyan}[Love.Engine]{reset}{brightWhite} : Libraries copied with sucess{reset}")
 end
 
 local ogprint = print
@@ -88,6 +87,7 @@ function love.run()
     local config = json.decode(love.filesystem.read("config.json"))
     local controls = json.decode(love.filesystem.read("controls.json"))
 
+    love.filesystem.createDirectory("bin")
     copyLib()
 
     local sourcePath = love.filesystem.getSaveDirectory() .. "/bin"
@@ -104,6 +104,8 @@ function love.run()
     fontcache.init()
     loveView = require 'source.system.utils.LoveView'
 
+
+    require('source.system.Imports')()
 
     Controls = baton.new({
         controls = controls,
