@@ -29,20 +29,25 @@ function love.initialize()
     discordrpc.initialize(configAPI.discord.appid, false)
 
     gameSave:initialize()
-    love.keyboard.setTextInput(true)
+    --love.keyboard.setTextInput(true)
     love.keyboard.setKeyRepeat(true)
 
     registers = {
         statesName = {},
+        isOnline = false,
         devWindow = false,
         devWindowContent = function() return end,
     }
+
+    local code, body = https.request("https://google.com")
+    registers.isOnline = code == 200
 
     registers.devWindowContent = function()
         Slab.BeginWindow("menuNightDev", { Title = "Development" })
         for _, value in ipairs(registers.statesName) do
             if Slab.Button(value) then
-                loadstring("gamestate.switch(" .. value .. ")")()
+                local stateStr = string.format('gamestate.switch(%s)', value)
+                loadstring(stateStr)()
             end
         end
         Slab.EndWindow()
@@ -68,7 +73,7 @@ function love.initialize()
 
     --love.filesystem.createDirectory("mods")
 
-    function discordrpc.ready(userId, username, discriminator, avatar)
+    discordrpc.ready = function(userId, username, discriminator, avatar)
         local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightWhite}: ready (%s, %s, %s, %s){reset}", userId, username, discriminator, avatar)
         io.printf(str)
 
@@ -76,12 +81,12 @@ function love.initialize()
         presence()
     end
 
-    function discordrpc.disconnected(errorCode, message)
+    discordrpc.disconnected = function(errorCode, message)
         local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: disconnected (%s, %s){reset}", errorCode, message)
         io.printf(str)
     end
 
-    function discordrpc.errored(errorCode, message)
+    discordrpc.errored = function(errorCode, message)
         local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: Error (%s, %s){reset}", errorCode, message)
         io.printf(str)
     end
@@ -95,12 +100,16 @@ end
 function love.update(elapsed)
     presenceUpdateTimer = presenceUpdateTimer + elapsed
 
-    if presenceUpdateTimer > 2 then
+    if presenceUpdateTimer > 2 and registers.isOnline then
         --discordrpc.updatePresence()
         presence()
+        --local str = "{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightBlue}: updated presence{reset}"
+        --io.printf(str)
         presenceUpdateTimer = 0
     end
-    discordrpc.runCallbacks()
+    if registers.isOnline then
+        discordrpc.runCallbacks()
+    end
 end
 
 function love.quit()

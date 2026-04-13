@@ -8,6 +8,8 @@ function Lane:__construct(control)
     self.x = 0
     self.y = 0
     self.opacity = 1
+    self.showLines = true
+    self.rotation = 0
 end
 
 function Lane:draw()

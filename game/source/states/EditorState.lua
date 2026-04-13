@@ -4,14 +4,33 @@ local Conductor = require 'source.game.Conductor'
 
 local EditorTimeline = require 'source.game.editor.EditorTimeline'
 
+local function updateUIState(state)
+
+end
+
 function EditorState:enter()
     loveframes.SetActiveSkin("Dark crimson")
 
+    self.registers = {
+        isLevelLoaded = false,
+        isEditing = false,
+        UIState = {
+            showNewLevelWindow = false
+        }
+    }
+
     loveView.registerLoveframesEvents()
 
+    local UIPaths = {
+        "source/game/views/EditorMenuBar.lua",
+        "source/game/views/EditorTab.lua",
+        "source/game/views/CreateLevelWindow.lua"
+    }
+
     loveView.unloadView()
-    loveView.addView("source/game/views/EditorMenuBar.lua")
-    loveView.addView("source/game/views/EditorTab.lua")
+    for idx, path in ipairs(UIPaths) do
+        loveView.addView(path)
+    end
 end
 
 function EditorState:draw()
@@ -20,6 +39,10 @@ end
 
 function EditorState:update(elapsed)
     loveView.update(elapsed)
+end
+
+function EditorState:leave()
+    loveView.unloadView()
 end
 
 return EditorState

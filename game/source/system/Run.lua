@@ -10,7 +10,7 @@ love.FEATURE_FLAGS = require 'source.system.FeatureFlags'
 love._FPSCap = 144
 love._unfocusedFPSCap = 60
 local flashOpacity = 0
-love._showFPS = false
+love._showFPS = true
 
 love.window.resolutionModes = {}
 

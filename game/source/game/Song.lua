@@ -1,5 +1,7 @@
 local Song = class:extend("Song")
 
+local Conductor = require 'source.game.Conductor'
+
 function Song:__construct()
     self.meta = {
         bpm = 100,
@@ -19,12 +21,12 @@ function Song:__construct()
     self.events = {}
 end
 
-function Song:update(elapsed)
-
+function Song:update()
+    Conductor.update()
 end
 
 function Song:loadFile(filename)
-
+    -- do shit --
 end
 
 return Song

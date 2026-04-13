@@ -8,4 +8,6 @@ return function()
     discordrpc = require 'source.system.libraries.discordRPC'
     loveframes = require 'source.system.utils.Loveframes'
     lume = require 'source.system.libraries.lume'
+    https = require 'https'
+    require 'source.system.libraries.autobatch'
 end
