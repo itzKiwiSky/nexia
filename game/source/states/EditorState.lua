@@ -4,18 +4,23 @@ local Conductor = require 'source.game.Conductor'
 
 local EditorTimeline = require 'source.game.editor.EditorTimeline'
 
+local Song = require 'source.game.Song'
+
 local function updateUIState(state)
 
 end
 
 function EditorState:enter()
+    self.song = Song:new()
+
+
     loveframes.SetActiveSkin("Dark crimson")
 
     self.registers = {
         isLevelLoaded = false,
         isEditing = false,
         UIState = {
-            showNewLevelWindow = false
+            showCreateLevelWindow = false
         }
     }
 
@@ -34,11 +39,16 @@ function EditorState:enter()
 end
 
 function EditorState:draw()
+    self.song:draw()
+    if love.FEATURE_FLAGS.developerMode then
+        love.graphics.print(inspect(self.registers), 120, 20)
+    end
     loveView.draw()
 end
 
 function EditorState:update(elapsed)
     loveView.update(elapsed)
+    self.song:update(elapsed)
 end
 
 function EditorState:leave()

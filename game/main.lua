@@ -9,6 +9,30 @@ local presenceUpdateTimer = 0
 languageService = {}
 languageRaw = {}
 
+local function createUserFolders()
+    --love.filesystem.createDirectory("user/")
+
+    local filelist = {
+        root = "user",
+        child = {
+            "created",
+            "downloaded",
+            "mods",
+            "skins",
+            "playlist",
+        }
+    }
+
+    if love.filesystem.getInfo(filelist.root) == nil then
+        love.filesystem.createDirectory(filelist.root)
+
+        for index, folder in ipairs(filelist.child) do
+            local path = string.format("%s/%s", filelist.root, folder)
+            love.filesystem.createDirectory(path)
+        end
+    end
+end
+
 function love.initialize()
     love.graphics.setDefaultFilter("nearest", "nearest")
     local languageManager = require 'source.system.utils.LanguageManager'
@@ -19,13 +43,14 @@ function love.initialize()
 
     gameSave.save = {
         user = {
-            leaderboard = {},
-            settings = {},
+            client = "",
+            playlist = {},
+            editors = {}
         },
+        settings = {}
     }
 
     local configAPI = json.decode(love.filesystem.read("API.json"))
-    --print(tonumber(configAPI.discord.appid))
     discordrpc.initialize(configAPI.discord.appid, false)
 
     gameSave:initialize()
@@ -90,6 +115,8 @@ function love.initialize()
         local str = string.format("{bgBrightBlue}{brightWhite}[Love.DiscordRPC]{reset}{brightRed}: Error (%s, %s){reset}", errorCode, message)
         io.printf(str)
     end
+
+    createUserFolders()
 
     gamestate.registerEvents()
 

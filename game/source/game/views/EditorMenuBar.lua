@@ -113,10 +113,10 @@ return function(new)
 
     local options = {
         newTab("File", {
-            newTabItem("New Project", function()
-                print("new project")
+            newTabItem("New Level", function()
+                EditorState.registers.UIState.showCreateLevelWindow = true
             end),
-            newTabItem("Open File", function()
+            newTabItem("Open Level", function()
                 print("open file")
             end),
             newTabItem("Save", function()

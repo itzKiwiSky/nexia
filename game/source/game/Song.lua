@@ -13,12 +13,26 @@ function Song:__construct()
         flags = {
             scriptedEvents = false
         },
-        tags = {},
+        tags = "",
     }
 
     self.lanes = {}
 
     self.events = {}
+end
+
+function Song:clone()
+    local s = Song:new()
+    s.meta = self.meta
+    s.lanes = self.lanes
+    s.events = {}
+    return s
+end
+
+function Song:draw()
+    if love.FEATURE_FLAGS.developerMode then
+        love.graphics.print(inspect(self), 20, 20)
+    end
 end
 
 function Song:update()
