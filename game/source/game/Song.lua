@@ -10,6 +10,7 @@ function Song:__construct()
         artist = "",
         mapper = "",
         description = "",
+        laneCount = 1,
         flags = {
             scriptedEvents = false
         },

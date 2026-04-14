@@ -9,5 +9,5 @@ return function()
     loveframes = require 'source.system.utils.Loveframes'
     lume = require 'source.system.libraries.lume'
     https = require 'https'
-    require 'source.system.libraries.autobatch'
+    --require 'source.system.libraries.autobatch'
 end

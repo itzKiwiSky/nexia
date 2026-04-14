@@ -41,7 +41,7 @@ end
 function EditorState:draw()
     self.song:draw()
     if love.FEATURE_FLAGS.developerMode then
-        love.graphics.print(inspect(self.registers), 120, 20)
+        love.graphics.print(inspect(self.registers), 180, 20)
     end
     loveView.draw()
 end

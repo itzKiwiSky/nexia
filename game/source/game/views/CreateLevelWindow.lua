@@ -2,40 +2,110 @@ package.loaded["source.game.views.Shared"] = nil
 local shared = require("source.game.views.Shared")
 local Song = require 'source.game.Song'
 
-local function createLabeledInput(new, elements, grid, fonts, inputType, labelText, yPos, key)
+local function createLabeledInput(new, elements, grid, fonts, inputType, labelText, yPos, targetTable, targetKey, options)
     local paddingText = 2
     local paddingInput = 10
 
-    local label = new("text")
-    label:SetFont(fonts.label)
-    label:SetDefaultColor(1, 1, 1, 1)
-    label:SetText(labelText)
-    grid:AddItem(label, yPos, paddingText, "left")
+    options = options or {
+        min = 1,
+        max = 9,
+        defaultValue = 0,
+    }
+
+    local addedElements = {}
+
+    if inputType ~= "checkbox" then
+        local label = new("text")
+        label:SetFont(fonts.label)
+        label:SetDefaultColor(1, 1, 1, 1)
+        label:SetText(labelText)
+        grid:AddItem(label, yPos, paddingText, "left")
+        addedElements["text"] = label
+    end
 
     switch(inputType, {
         ["textinput"] = function()
             local input = new("textinput")
-            input:SetSize(176, label:GetHeight())
+            input:SetSize(176, addedElements["text"]:GetHeight())
             input:SetFont(fonts.input)
             input:SetText("")
             input:SetHover(true)
+            input:SetAlwaysUpdate(true)
             input.Update = function(this, elapsed)
-                if type(key) ~= "nil" then
-                    if tonumber(this:GetValue()) ~= nil then
-                        key = tonumber(this:GetValue())
-                    else
-                        key = this:GetValue()
-                    end
+                local value = this:GetValue()
+
+                if tonumber(value) ~= nil then
+                    targetTable[targetKey] = tonumber(value)
+                else
+                    targetTable[targetKey] = value
                 end
             end
             grid:AddItem(input, yPos, paddingInput, "left")
+            addedElements["input"] = input
         end,
+        ["checkbox"] = function()
+            local checkbox = new("checkbox")
+            checkbox:SetFont(fonts.label)
+            checkbox:SetText(labelText)
+            checkbox:SetHover(true)
+            checkbox.OnChanged = function(this, value)
+                targetTable[targetKey] = value
+            end
+            grid:AddItem(checkbox, yPos, paddingText, "left")
+            addedElements["checkbox"] = checkbox
+        end,
+        ["numberbox"] = function()
+            -- Im gonna make my onw bc the lf numberbox sucks --
+            local numberbox = new("textinput")
+            numberbox:SetProperty("count", options.defaultValue)
+            numberbox:SetSize(64, addedElements["text"]:GetHeight())
+            numberbox:SetFont(fonts.input)
+            numberbox:SetText("1")
+            numberbox:SetHover(true)
+            numberbox:SetAlwaysUpdate(true)
+            numberbox.Update = function(this, elapsed)
+                this:SetText(this:GetProperty("count"))
+                targetTable[targetKey] = tonumber(this:GetText())
+            end
+            local size = addedElements["text"]:GetHeight()
+
+            local addNumberButton = new("button")
+            addNumberButton:SetText("+")
+            addNumberButton:SetSize(size, size)
+            addNumberButton:SetHover(true)
+            addNumberButton.OnClick = function(this)
+                local c = numberbox:GetProperty("count")
+                if c < options.max then
+                    c = c + 1
+                end
+                numberbox:SetProperty("count", c)
+            end
+
+            local subNumberButton = new("button")
+            subNumberButton:SetText("-")
+            subNumberButton:SetSize(size, size)
+            subNumberButton:SetHover(true)
+            subNumberButton.OnClick = function(this)
+                local c = numberbox:GetProperty("count")
+                if c > options.min then
+                    c = c - 1
+                end
+                numberbox:SetProperty("count", c)
+            end
+
+            grid:AddItem(numberbox, yPos, paddingInput + 2, "left")
+            grid:AddItem(subNumberButton, yPos, paddingInput, "left")
+            grid:AddItem(addNumberButton, yPos, paddingInput + 7, "left")
+
+            addedElements["numberbox"] = {
+                add = addNumberButton,
+                sub = subNumberButton,
+                display = numberbox
+            }
+        end
     })
 
-    table.insert(elements, {
-        text = label,
-        input = input
-    })
+    table.insert(elements, addedElements)
 end
 
 return function(new)
@@ -70,12 +140,15 @@ return function(new)
         input = fontInput
     }
 
-    createLabeledInput(new, elements, grid, fonts, "textinput", "Song title", 2, tempSong.meta.title)
-    createLabeledInput(new, elements, grid, fonts, "textinput", "Artist", 5, tempSong.meta.artist)
-    createLabeledInput(new, elements, grid, fonts, "textinput", "BPM", 8, tempSong.meta.bpm)
-    createLabeledInput(new, elements, grid, fonts, "textinput", "Description", 11, tempSong.meta.description)
-    createLabeledInput(new, elements, grid, fonts, "textinput", "Tags", 14, tempSong.meta.tags)
-    createLabeledInput(new, elements, grid, fonts, "textinput", "Charter", 17, tempSong.meta.mapper)
+    createLabeledInput(new, elements, grid, fonts, "textinput", "Song title", 2, tempSong.meta, "title")
+    createLabeledInput(new, elements, grid, fonts, "textinput", "Artist", 5, tempSong.meta, "artist")
+    createLabeledInput(new, elements, grid, fonts, "numberbox", "BPM", 8, tempSong.meta, "bpm", { defaultValue = 100, min = 10, max = 999 })
+    createLabeledInput(new, elements, grid, fonts, "textinput", "Description", 11, tempSong.meta, "description")
+    createLabeledInput(new, elements, grid, fonts, "textinput", "Tags", 14, tempSong.meta, "tags")
+    createLabeledInput(new, elements, grid, fonts, "textinput", "Charter", 17, tempSong.meta, "mapper")
+    createLabeledInput(new, elements, grid, fonts, "checkbox", "scripted events", 20, tempSong.meta.flags, "scriptedEvents")
+    createLabeledInput(new, elements, grid, fonts, "numberbox", "Start song", 23, tempSong.meta, "songStartOffset")
+    createLabeledInput(new, elements, grid, fonts, "numberbox", "Lanes", 26, tempSong.meta, "laneCount", { defaultValue = 1, min = 1, max = 9 })
 
     local buttonConfirm = new("button")
     buttonConfirm:SetText("Create")
@@ -83,7 +156,9 @@ return function(new)
     buttonConfirm:SetHover(true)
     buttonConfirm.OnClick = function(this)
         EditorState.registers.UIState.showCreateLevelWindow = false
-        table.deepmerge(EditorState.song, tempSong)
+        --print(inspect(tempSong))
+        --table.deepmerge(EditorState.song, tempSong)
+        EditorState.song = tempSong
     end
     grid:AddItem(buttonConfirm, 31, 18, "left")
 
