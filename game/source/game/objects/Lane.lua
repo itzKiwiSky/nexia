@@ -1,8 +1,10 @@
-local Lane = class:extend("Lane")
+local MusicObject = require 'source.game.MusicObject'
+local Lane = MusicObject:extend("Lane")
 
 function Lane:__construct(control)
     self.control = control
     self.notes = {}
+    self.songNotes = {}
     self.scrollSpeed = 1.7
     self.renderedNotes = {}
     self.x = 0
@@ -10,6 +12,14 @@ function Lane:__construct(control)
     self.opacity = 1
     self.showLines = true
     self.rotation = 0
+end
+
+function Lane:getRepresentation()
+    return {
+        control = self.control,
+        notes = self.songNotes,
+        scrollSpeed = self.scrollSpeed
+    }
 end
 
 function Lane:draw()

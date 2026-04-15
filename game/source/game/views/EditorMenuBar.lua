@@ -115,12 +115,16 @@ return function(new)
         newTab("File", {
             newTabItem("New Level", function()
                 EditorState.registers.UIState.showCreateLevelWindow = true
+                EditorState.registers.isUIShowing = true
             end),
             newTabItem("Open Level", function()
                 print("open file")
             end),
             newTabItem("Save", function()
                 print("save")
+            end),
+            newTabItem("Exit", function()
+                print("exit")
             end)
         }),
 

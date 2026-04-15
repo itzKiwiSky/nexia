@@ -56,17 +56,19 @@ local function createLabeledInput(new, elements, grid, fonts, inputType, labelTe
         end,
         ["numberbox"] = function()
             -- Im gonna make my onw bc the lf numberbox sucks --
+            local function updateNumberboxText(text)
+                text:SetText(text:GetProperty("count"))
+                targetTable[targetKey] = tonumber(text:GetText())
+            end
+
             local numberbox = new("textinput")
             numberbox:SetProperty("count", options.defaultValue)
             numberbox:SetSize(64, addedElements["text"]:GetHeight())
             numberbox:SetFont(fonts.input)
-            numberbox:SetText("1")
+            numberbox:SetText("")
             numberbox:SetHover(true)
+            numberbox:SetUsable({ "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", "-" })
             numberbox:SetAlwaysUpdate(true)
-            numberbox.Update = function(this, elapsed)
-                this:SetText(this:GetProperty("count"))
-                targetTable[targetKey] = tonumber(this:GetText())
-            end
             local size = addedElements["text"]:GetHeight()
 
             local addNumberButton = new("button")
@@ -79,6 +81,7 @@ local function createLabeledInput(new, elements, grid, fonts, inputType, labelTe
                     c = c + 1
                 end
                 numberbox:SetProperty("count", c)
+                updateNumberboxText(numberbox)
             end
 
             local subNumberButton = new("button")
@@ -91,11 +94,14 @@ local function createLabeledInput(new, elements, grid, fonts, inputType, labelTe
                     c = c - 1
                 end
                 numberbox:SetProperty("count", c)
+                updateNumberboxText(numberbox)
             end
 
             grid:AddItem(numberbox, yPos, paddingInput + 2, "left")
             grid:AddItem(subNumberButton, yPos, paddingInput, "left")
             grid:AddItem(addNumberButton, yPos, paddingInput + 7, "left")
+
+            updateNumberboxText(numberbox)
 
             addedElements["numberbox"] = {
                 add = addNumberButton,
@@ -156,8 +162,6 @@ return function(new)
     buttonConfirm:SetHover(true)
     buttonConfirm.OnClick = function(this)
         EditorState.registers.UIState.showCreateLevelWindow = false
-        --print(inspect(tempSong))
-        --table.deepmerge(EditorState.song, tempSong)
         EditorState.song = tempSong
     end
     grid:AddItem(buttonConfirm, 31, 18, "left")
@@ -167,7 +171,11 @@ return function(new)
     buttonCancel:SetSize(64, 28)
     buttonCancel:SetHover(true)
     buttonCancel.OnClick = function(this)
-        EditorState.registers.UIState.showCreateLevelWindow = false
+        if EditorState.registers.isLevelLoaded then
+            EditorState.registers.UIState.showCreateLevelWindow = false
+        else
+            gamestate.pop()
+        end
     end
     grid:AddItem(buttonCancel, 31, 2, "left")
 end

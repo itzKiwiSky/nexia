@@ -1,4 +1,5 @@
-local Song = class:extend("Song")
+local MusicObject = require 'source.game.MusicObject'
+local Song = MusicObject:extend("Song")
 
 local Conductor = require 'source.game.Conductor'
 
