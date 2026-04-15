@@ -6,6 +6,5 @@ featureFlags.videoStats = false
 featureFlags.captureScreenshot = true
 featureFlags.developerMode = featureFlags.debug
 featureFlags.isDemo = true
-featureFlags.nightExtraDemo = false
 
 return featureFlags
