@@ -13,13 +13,12 @@
             "scripts": []
         }
     },
-    "lanes": [
-        {
-            "control": "control1",
+    "lanes": {
+        "main_control": {
             "scrollSpeed": 1.5,
             "notes": []
         }
-    ],
+    },
     "events": [
         {
             "time": 0.5,

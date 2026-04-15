@@ -126,6 +126,7 @@ return function(new)
     frame:ShowCloseButton(false)
     frame:Center()
     frame:SetAlwaysUpdate(true)
+    frame:SetHover(true)
     frame.Update = function(this)
         frame:SetVisible(EditorState.registers.UIState.showCreateLevelWindow)
     end

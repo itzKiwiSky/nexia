@@ -1,14 +1,8 @@
 EditorState = {}
 
 local Conductor = require 'source.game.Conductor'
-
 local EditorTimeline = require 'source.game.editor.EditorTimeline'
-
 local Song = require 'source.game.Song'
-
-local function updateUIState(state)
-
-end
 
 function EditorState:enter()
     self.song = Song:new()
@@ -20,17 +14,23 @@ function EditorState:enter()
         isEditing = false,
         isUIShowing = true,
         UIState = {
-            showCreateLevelWindow = true
+            showCreateLevelWindow = false,
+            showLaneEditorWindow = false,
         }
     }
+
+    -- if not level loaded, open this window to create a new level --
+    self.registers.UIState.showCreateLevelWindow = not self.registers.isLevelLoaded
 
     loveView.registerLoveframesEvents()
 
     local UIPaths = {
         "source/game/views/EditorMenuBar.lua",
-        "source/game/views/EditorTab.lua",
+        "source/game/views/EditorLane.lua",
         "source/game/views/CreateLevelWindow.lua"
     }
+
+    EditorTimeline:clear() -- make sure all lanes are cleared before being created --
 
     loveView.unloadView()
     for idx, path in ipairs(UIPaths) do

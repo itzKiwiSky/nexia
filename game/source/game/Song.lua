@@ -3,6 +3,14 @@ local Song = MusicObject:extend("Song")
 
 local Conductor = require 'source.game.Conductor'
 
+local NoteData = class:extend("NoteData")
+
+function NoteData:__construct(time, sustainTime, isSustain)
+    self.time = time
+    self.sustainTime = sustainTime
+    self.isSustain = isSustain
+end
+
 function Song:__construct()
     self.meta = {
         bpm = 100,
@@ -29,6 +37,14 @@ function Song:clone()
     s.lanes = self.lanes
     s.events = {}
     return s
+end
+
+function Song:getRepresentation()
+    return {
+        meta = self.meta,
+        lanes = self.lanes,
+        events = self.events,
+    }
 end
 
 function Song:draw()
