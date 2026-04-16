@@ -2,6 +2,8 @@ package.loaded["source.game.views.Shared"] = nil
 local shared = require("source.game.views.Shared")
 local Song = require 'source.game.Song'
 
+local CreateLevelCommand = require 'source.game.editor.commands.CreateLevelCommand'
+
 local function createLabeledInput(new, elements, grid, fonts, inputType, labelText, yPos, targetTable, targetKey, options)
     local paddingText = 2
     local paddingInput = 10
@@ -164,6 +166,9 @@ return function(new)
     buttonConfirm.OnClick = function(this)
         EditorState.registers.UIState.showCreateLevelWindow = false
         EditorState.song = tempSong
+        -- this ensure that the level data is create --
+        CreateLevelCommand(tempSong)
+        --commandController.run("CreateLevelCommand", tempSong)
     end
     grid:AddItem(buttonConfirm, 31, 18, "left")
 

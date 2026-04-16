@@ -118,7 +118,7 @@ return function(new)
                 EditorState.registers.isUIShowing = true
             end),
             newTabItem("Open Level", function()
-                print("open file")
+                shared.filesytemDialog:loadDialog(loveframes, nil, { "Nexia level | *.nex", "All | *.*" })
             end),
             newTabItem("Save", function()
                 print("save")

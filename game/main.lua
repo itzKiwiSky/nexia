@@ -2,7 +2,6 @@ require 'source.system.ErrHandler'
 require 'source.system.Run'
 local gitstuff = require 'source.system.GitStuff' -- super important stuff --
 assetManager = require 'source.system.AssetManager'
-commandController = require 'source.game.editor.CommandController'
 
 presence = require 'source.system.UpdatePresence'
 local presenceUpdateTimer = 0
@@ -50,18 +49,6 @@ function love.initialize()
         },
         settings = {}
     }
-
-    -- import commands --
-    local commandPath = "source/game/editor/commands"
-    local files = love.filesystem.getDirectoryItems(commandPath)
-    for index, file in ipairs(files) do
-        local filename = file:gsub("%.lua", "")
-        commandController.commands[filename] = require(string.format("%s/%s", commandPath, filename))
-        if love.FEATURE_FLAGS.debug then
-            local str = string.format("{bgWhite}{brightBlack}{bold}[Love.CommandController]{reset}{brightWhite} : Command {bgYellow}%s{reset}{brightWhite} loaded with {brightGreen}Sucess{reset}", filename)
-            io.printf(str)
-        end
-    end
 
     local configAPI = json.decode(love.filesystem.read("API.json"))
     discordrpc.initialize(configAPI.discord.appid, false)
