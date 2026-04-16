@@ -13,6 +13,7 @@ local dDir
 local list
 local fileinput
 local FilesystemDialog = {}
+local loveFS = require 'source.game.editor.lovefs.LoveFS'
 
 local function updDialog(self, lf)
     dDir:SetText(self.current)

@@ -1,5 +1,32 @@
+--[[
+Copyright 2020 megagrump@pm.me
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+]] --
+
 local ffi, bit = require('ffi'), require('bit')
 local C = ffi.C
+
+local fopen, getcwd, chdir, unlink, mkdir, rmdir
+local BUFFERMODE, MODEMAP
+local ByteArray = ffi.typeof('unsigned char[?]')
+local function _ptr(p) return p ~= nil and p or nil end -- NULL pointer to nil
 
 local File = {
     getBuffer = function(self) return self._bufferMode, self._bufferSize end,
@@ -7,11 +34,6 @@ local File = {
     getMode = function(self) return self._mode end,
     isOpen = function(self) return self._mode ~= 'c' and self._handle ~= nil end,
 }
-
-local fopen, getcwd, chdir, unlink, mkdir, rmdir
-local BUFFERMODE, MODEMAP
-local ByteArray = ffi.typeof('unsigned char[?]')
-local function _ptr(p) return p ~= nil and p or nil end -- NULL pointer to nil
 
 function File:open(mode)
     if self._mode ~= 'c' then return false, "File " .. self._name .. " is already open" end
@@ -91,6 +113,12 @@ function File:read(containerOrBytes, bytes)
 
     local data = love.data.newByteData(bytes)
     local r = tonumber(C.fread(data:getFFIPointer(), 1, bytes, self._handle))
+
+    if container == 'data' then
+        -- FileData from ByteData requires LÖVE 11.4+
+        local ok, fd = pcall(love.filesystem.newFileData, data, self._name)
+        if ok then return fd, r end
+    end
 
     local str = data:getString()
     data:release()
@@ -329,9 +357,6 @@ local function withTempMount(dir, fn, ...)
 end
 
 function nativefs.getDirectoryItems(dir)
-    if type(dir) ~= "string" then
-        error("bad argument #1 to 'getDirectoryItems' (string expected, got " .. type(dir) .. ")")
-    end
     local result, err = withTempMount(dir, love.filesystem.getDirectoryItems)
     return result or {}
 end
@@ -351,9 +376,6 @@ local function getDirectoryItemsInfo(path, filtertype)
 end
 
 function nativefs.getDirectoryItemsInfo(path, filtertype)
-    if type(path) ~= "string" then
-        error("bad argument #1 to 'getDirectoryItemsInfo' (string expected, got " .. type(path) .. ")")
-    end
     local result, err = withTempMount(path, getDirectoryItemsInfo, filtertype)
     return result or {}
 end
@@ -376,9 +398,6 @@ local function leaf(p)
 end
 
 function nativefs.getInfo(path, filtertype)
-    if type(path) ~= 'string' then
-        error("bad argument #1 to 'getInfo' (string expected, got " .. type(path) .. ")")
-    end
     local dir = path:match("(.*[\\/]).*$") or './'
     local file = leaf(path)
     local result, err = withTempMount(dir, getInfo, file, filtertype)
@@ -391,34 +410,36 @@ MODEMAP = { r = 'rb', w = 'wb', a = 'ab' }
 local MAX_PATH = 4096
 
 ffi.cdef([[
-    int PHYSFS_mount(const char* dir, const char* mountPoint, int appendToPath);
-    int PHYSFS_unmount(const char* dir);
-    const char* PHYSFS_getMountPoint(const char* dir);
-    typedef struct FILE FILE;
-    FILE* fopen(const char* path, const char* mode);
-    size_t fread(void* ptr, size_t size, size_t nmemb, FILE* stream);
-    size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream);
-    int fclose(FILE* stream);
-    int fflush(FILE* stream);
-    size_t fseek(FILE* stream, size_t offset, int whence);
-    size_t ftell(FILE* stream);
-    int setvbuf(FILE* stream, char* buffer, int mode, size_t size);
-    int feof(FILE* stream);
+	int PHYSFS_mount(const char* dir, const char* mountPoint, int appendToPath);
+	int PHYSFS_unmount(const char* dir);
+	const char* PHYSFS_getMountPoint(const char* dir);
+
+	typedef struct FILE FILE;
+
+	FILE* fopen(const char* path, const char* mode);
+	size_t fread(void* ptr, size_t size, size_t nmemb, FILE* stream);
+	size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream);
+	int fclose(FILE* stream);
+	int fflush(FILE* stream);
+	size_t fseek(FILE* stream, size_t offset, int whence);
+	size_t ftell(FILE* stream);
+	int setvbuf(FILE* stream, char* buffer, int mode, size_t size);
+	int feof(FILE* stream);
 ]])
 
 if ffi.os == 'Windows' then
     ffi.cdef([[
-        int MultiByteToWideChar(unsigned int cp, uint32_t flags, const char* mb, int cmb, const wchar_t* wc, int cwc);
-        int WideCharToMultiByte(unsigned int cp, uint32_t flags, const wchar_t* wc, int cwc, const char* mb,
-                                int cmb, const char* def, int* used);
-        int GetLogicalDrives(void);
-        int CreateDirectoryW(const wchar_t* path, void*);
-        int _wchdir(const wchar_t* path);
-        wchar_t* _wgetcwd(wchar_t* buffer, int maxlen);
-        FILE* _wfopen(const wchar_t* path, const wchar_t* mode);
-        int _wunlink(const wchar_t* path);
-        int _wrmdir(const wchar_t* path);
-    ]])
+		int MultiByteToWideChar(unsigned int cp, uint32_t flags, const char* mb, int cmb, const wchar_t* wc, int cwc);
+		int WideCharToMultiByte(unsigned int cp, uint32_t flags, const wchar_t* wc, int cwc, const char* mb,
+		                        int cmb, const char* def, int* used);
+		int GetLogicalDrives(void);
+		int CreateDirectoryW(const wchar_t* path, void*);
+		int _wchdir(const wchar_t* path);
+		wchar_t* _wgetcwd(wchar_t* buffer, int maxlen);
+		FILE* _wfopen(const wchar_t* path, const wchar_t* mode);
+		int _wunlink(const wchar_t* path);
+		int _wrmdir(const wchar_t* path);
+	]])
 
     BUFFERMODE = { full = 0, line = 64, none = 4 }
 
@@ -448,12 +469,12 @@ else
     BUFFERMODE = { full = 0, line = 1, none = 2 }
 
     ffi.cdef([[
-        char* getcwd(char *buffer, int maxlen);
-        int chdir(const char* path);
-        int unlink(const char* path);
-        int mkdir(const char* path, int mode);
-        int rmdir(const char* path);
-    ]])
+		char* getcwd(char *buffer, int maxlen);
+		int chdir(const char* path);
+		int unlink(const char* path);
+		int mkdir(const char* path, int mode);
+		int rmdir(const char* path);
+	]])
 
     local nameBuffer = ByteArray(MAX_PATH)
 
