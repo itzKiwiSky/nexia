@@ -3,6 +3,7 @@ EditorState = {}
 local Conductor = require 'source.game.Conductor'
 local EditorTimeline = require 'source.game.editor.EditorTimeline'
 local Song = require 'source.game.Song'
+local EditorLane = require 'source.game.editor.EditorLane'
 
 function EditorState:enter()
     self.song = Song:new()
@@ -38,13 +39,33 @@ function EditorState:enter()
     end
 end
 
+function EditorState:updateState()
+    -- we double clear just to make sure --
+    EditorTimeline:clear()
+
+    for idx = 1, self.song.meta.laneCount, 1 do
+        local lane = EditorLane:new()
+        EditorTimeline:addLane(lane)
+    end
+end
+
 function EditorState:draw()
     loveView.draw()
+    EditorTimeline:draw()
 end
 
 function EditorState:update(elapsed)
     loveView.update(elapsed)
     self.song:update(elapsed)
+    EditorTimeline:update(elapsed)
+end
+
+function EditorState:mousepressed(x, y, button)
+    EditorTimeline:mousepressed(button, x, y)
+end
+
+function EditorState:wheelmoved(x, y)
+    EditorTimeline:wheelmoved(x, y)
 end
 
 function EditorState:leave()

@@ -1,7 +1,9 @@
 local EditorLane = class:extend("EditorLane")
+local timeline = require 'source.game.editor.EditorTimeline'
 
-function EditorLane:__construct(y)
-    self.y = y
+function EditorLane:__construct()
+    self.y = 0
+    self.height = 32
     self.notes = {}
 end
 

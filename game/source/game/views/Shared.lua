@@ -14,5 +14,4 @@ return {
         love.graphics.rectangle("fill", x, y, width, height)
         love.graphics.setColor(1, 1, 1, 1)
     end,
-    filesytemDialog = require 'source.game.editor.FilesystemDialog',
 }
